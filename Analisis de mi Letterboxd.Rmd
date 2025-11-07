@@ -1,0 +1,170 @@
+---
+title: "Analisis de mi Letterboxd"
+author: "A-189"
+date: "2025-11-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Etapa 1: Inicio
+
+#### Abrimos las librerías:
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+library(writexl)
+library(TMDb)
+library(rvest)
+library(stringr)
+library(magrittr)
+library(longurl)
+```
+
+
+
+
+#### Se carga el dataset
+
+
+**Películas que le he dado Like en Letterboxd:**
+
+
+```{r}
+df_letterboxd_like <- read_xlsx("Input/Peliculas con Like - Letterboxd.xlsx", na=c("N/A", " ")) |>
+  janitor::clean_names()
+```
+
+
+**Películas que he visto y registrado en Letterboxd:**
+
+```{r}
+df_letterboxd_watched <- read_xlsx("Input/Peliculas que he visto - Letterboxd.xlsx", na=c("N/A", " ")) |>
+  janitor::clean_names()
+```
+
+**Explicación:**
+
+-   El Excel contiene información otorgada por Letterboxd al pedir la exportación de mis datos. En ella encontramos un listado de las películas que le he dado like, es decir, de las películas que vi, las que me han gustado.
+
+-   Usamos el código "na=c("N/A", " ")" para que no se contabilizen espacios en blanco.
+
+-   Usamos el código "janitor::clean_names()" para estandarizar los nombres de las columnas
+
+
+
+## Hacemos que la parte de los urls sea un character:
+
+```{r}
+as.character(df_letterboxd_like$letterboxd_uri)
+```
+
+
+## Creamos una columna donde expandimos los urls cortos de Letterboxd a sus urls originales:
+
+```{r}
+df_letterboxd_like_con_urls <- df_letterboxd_like |>
+  mutate(original_url = expand_urls(letterboxd_uri))
+```
+
+
+## Creamos columnas nuevas para los urls de géneros, temas y nanogéneros:
+
+```{r}
+df_letterboxd_like_con_urls <- df_letterboxd_like_con_urls |>
+  mutate(genres_url = paste0((df_letterboxd_like_con_urls$original_url$expanded_url), "genres/")) |>
+  mutate(themes_url = paste0((df_letterboxd_like_con_urls$original_url$expanded_url), "themes/")) |>
+  mutate(nanogenres_url = paste0((df_letterboxd_like_con_urls$original_url$expanded_url), "nanogenres/"))
+```
+
+
+### Ahora hacemos lo mismo con la de películas vistas
+
+```{r}
+df_letterboxd_watched_con_urls <- df_letterboxd_watched |>
+  mutate(original_url = expand_urls(letterboxd_uri))
+```
+
+
+```{r}
+df_letterboxd_watched_con_urls <- df_letterboxd_watched_con_urls |>
+  mutate(genres_url = paste0((df_letterboxd_watched_con_urls$original_url$expanded_url), "genres/")) |>
+  mutate(themes_url = paste0((df_letterboxd_watched_con_urls$original_url$expanded_url), "themes/")) |>
+  mutate(nanogenres_url = paste0((df_letterboxd_watched_con_urls$original_url$expanded_url), "nanogenres/"))
+```
+
+
+
+#### Sección 2: Sacar los géneros, temas y nanogéneros de las películas
+
+**Películas que le he dado Like en Letterboxd:**
+```{r}
+df_letterboxd_like_con_urls_prueba <- df_letterboxd_like_con_urls |>
+  rowwise() |>
+  mutate(
+    genres = list(
+      read_html(genres_url) |>
+        html_nodes(".capitalize:nth-child(2) .text-slug") |>
+        html_text() |>
+        paste(collapse = ", ")
+    ),
+    themes = list(
+      read_html(themes_url) |>
+        html_nodes(".title .label") |>
+        html_text() |>
+        paste(collapse = ", ")
+    ),
+    nanogenres = list(
+      read_html(nanogenres_url) |>
+        html_nodes(".title .label") |>
+        html_text() |>
+        paste(collapse = ", ")
+    )
+  ) 
+```
+
+```{r}
+df_letterboxd_like_con_urls_prueba <- df_letterboxd_like_con_urls |>
+  rowwise() |>
+  mutate(
+    genres = list(
+      read_html(genres_url) |>
+        html_nodes(".capitalize:nth-child(2) .text-slug") |>
+        html_text() |>
+        paste(collapse = ", ")
+    ),
+    themes = list(
+      read_html(themes_url) |>
+        html_nodes(".title .label") |>
+        html_text() |>
+        paste(collapse = ", ")
+    ),
+    nanogenres = list(
+      read_html(nanogenres_url) |>
+        html_nodes(".title .label") |>
+        html_text() |>
+        paste(collapse = ", ")
+    )
+  ) 
+```
+
+
+
+#### Sección 3: Graficarlas y que se muestren su frecuencia !  (Así sé cuál es la que más veo)
+
+AYUDAAAAAAAAAAAAAAAA no puedo graficar nada :(
+(tampoco podía eliminar columnas que se crearon anteriormente con la función de extender los urls porque se hizo con nombre "$" y de ahí me bloquea todo)
+
+```{r}
+grafico_letterboxd_like_con_urls_prueba <- df_letterboxd_like_con_urls_prueba |>
+  drop_na() |>
+  ggplot(aes(x = genres)) +
+  geom_bar(stat = "count", fill = "steelblue")
+```
