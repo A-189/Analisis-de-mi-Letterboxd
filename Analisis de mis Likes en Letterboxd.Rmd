@@ -271,6 +271,9 @@ grafico_like_genres <- df_like_genres_con_conteo |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+```{r}
+ggsave("Output/plot_peliculas_genero.png", width = 8, height = 5)
+```
 
 -   Usamos "drop_na()" para eliminar los NA del dataframe.
 
@@ -307,6 +310,11 @@ grafico_like_themes <- df_like_themes_con_conteo |>
   coord_flip()
 ```
 
+```{r}
+ggsave("Output/plot_peliculas_tematicas.png", width = 8, height = 6)
+```
+
+
 -   Usamos "coord_flip()" para voltear el gráfico, de modo que las barras sean horizontales en lugar de verticales. Esto lo hicimos con el objetivo de que el texto de los partidos o coaliciones sea más legible y no se sobrelapen uno a los otros.
 
 **Nanogéneros:**
@@ -325,3 +333,8 @@ grafico_like_nanogenres <- df_like_nanogenres_con_conteo |>
   theme_minimal() +
   coord_flip()
 ```
+```{r}
+ggsave("Output/plot_peliculas_nanogenero.png", width = 8, height = 6)
+
+```
+
